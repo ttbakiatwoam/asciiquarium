@@ -3,7 +3,8 @@
 
 !/asciiquarium
 !/cpanfile
-!/lib
+!/lib/
+!lib/**
 
 !/CHANGES.txt
 !/LICENSE.txt
