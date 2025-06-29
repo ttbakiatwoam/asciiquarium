@@ -18,7 +18,21 @@ use Asciiquarium::AsciiArt;
 
 our $VERSION = '1.3';
 
+# Global variables set by main script
+our $new_fish;
+
 =head1 SUBROUTINES
+
+=head2 set_globals(%globals)
+
+Sets global variables from the main script.
+
+=cut
+
+sub set_globals {
+    my %globals = @_;
+    $new_fish = $globals{new_fish} // 1;
+}
 
 =head2 add_all_fish($anim)
 
@@ -29,9 +43,12 @@ Adds multiple fish to the animation.
 sub add_all_fish {
     my ($anim) = @_;
     
-    my $fish_count = int(rand(4)) + 1;  # 1-4 fish
+    # figure out how many fish to add by the size of the screen,
+    # minus the stuff above the water
+    my $screen_size = ($anim->height() - 9) * $anim->width();
+    my $fish_count = int($screen_size / 350);
     for (1 .. $fish_count) {
-        add_fish($anim);
+        add_fish(undef, $anim);
     }
 }
 
@@ -42,15 +59,18 @@ Adds a single fish to the animation, choosing between old and new fish styles.
 =cut
 
 sub add_fish {
-    my ($anim) = @_;
-    
-    # Global variables from main script
-    our $new_fish;
+    my ($old_fish, $anim) = @_;
     
     if ($new_fish) {
-        add_new_fish($anim);
-    } else {
-        add_old_fish($anim);
+        if (int(rand(12)) > 8) {
+            add_new_fish($old_fish, $anim);
+        }
+        else {
+            add_old_fish($old_fish, $anim);
+        }
+    }
+    else {
+        add_old_fish($old_fish, $anim);
     }
 }
 
@@ -122,6 +142,12 @@ sub _add_fish_entity {
     );
 
     $fish_object->callback(\&fish_callback);
+    $fish_object->die_offscreen(1);
+    $fish_object->death_cb(sub { 
+        my ($dead_fish, $anim) = @_;
+        # Call main::random_object to add a new random object
+        main::random_object($dead_fish, $anim);
+    });
     $anim->new_entity($fish_object);
 }
 

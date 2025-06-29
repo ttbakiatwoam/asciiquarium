@@ -1,4 +1,99 @@
 #!/usr/bin/env perl
+
+=head1 NAME
+
+asciiquarium - An aquarium/sea animation in ASCII art
+
+=head1 SYNOPSIS
+
+    asciiquarium [options]
+
+=head1 DESCRIPTION
+
+Asciiquarium is an aquarium/sea animation in ASCII art.
+Enjoy the mysteries of the sea from the safety of your own terminal!
+
+This application creates a terminal-based animation featuring various sea
+creatures including fish, sharks, whales, dolphins, and other marine life
+swimming around in an ASCII art aquarium environment.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-c>, B<--classic>
+
+Only show species from Asciiquarium 1.0
+
+=item B<-t>, B<--transparent>
+
+Use transparent background
+
+=item B<-s>, B<--screensaver>
+
+Exit on any keypress (screensaver mode)
+
+=item B<-h>, B<--help>
+
+Print help message and exit
+
+=item B<-v>, B<--version>
+
+Print version information and exit
+
+=back
+
+=head1 HOTKEYS
+
+=over 4
+
+=item B<q>
+
+Quit the application
+
+=item B<r>
+
+Redraw the screen
+
+=item B<p>
+
+Pause/unpause the animation
+
+=back
+
+=head1 DEPENDENCIES
+
+=over 4
+
+=item * Term::Animation
+
+=item * Curses
+
+=back
+
+=head1 AUTHORS
+
+=over 4
+
+=item * Kirk Baucom - Original author
+
+=item * Joan Stark - ASCII art
+
+=item * Claudio Matsuoka - Enhanced marine biodiversity
+
+=item * Various contributors - See comments in source code
+
+=back
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+=cut
+
 #
 #############################################################################
 #
@@ -90,6 +185,7 @@ use Asciiquarium::Config;
 use Asciiquarium::AsciiArt;
 use Asciiquarium::Fish;
 use Asciiquarium::Environment;
+use Asciiquarium::Logger;
 
 my $version = "1.3";
 my $help_message = 'Asciiquarium is an aquarium/sea animation in ASCII art.
@@ -145,12 +241,18 @@ my @random_objects = init_random_objects();
 # Use configuration from Asciiquarium::Config
 my %depth = %Asciiquarium::Config::DEPTH_VALUES;
 
+# Set global variables for modules
+Asciiquarium::Fish::set_globals(new_fish => $new_fish);
+
 main();
 
 ####################### MAIN #######################
 
 sub main {
 
+    # Initialize logging
+    Asciiquarium::Logger::info("Starting Asciiquarium v$version");
+    
     my $anim = Term::Animation->new();
 
     # set the wait time for getch from configuration
@@ -203,226 +305,9 @@ sub main {
 
 # Fish functions moved to Asciiquarium::Fish module
 
-sub add_castle {
-    my ($anim) = @_;
-    my @castle_image = (
-q{
-               T~~
-               |
-              /^\
-             /   \
- _   _   _  /     \  _   _   _
-[ ]_[ ]_[ ]/ _   _ \[ ]_[ ]_[ ]
-|_=__-_ =_|_[ ]_[ ]_|_=-___-__|
- | _- =  | =_ = _    |= _=   |
- |= -[]  |- = _ =    |_-=_[] |
- | =_    |= - ___    | =_ =  |
- |=  []- |-  /| |\   |=_ =[] |
- |- =_   | =| | | |  |- = -  |
- |_______|__|_|_|_|__|_______|
-},q{
-               T~~
-               |
-              /^\
-             /   \
- _   _   _  /     \  _   _   _
-[ ]_[ ]_[ ]/ _   _ \[ ]_[ ]_[ ]
-|_=__-_ =_|_[ ]_[ ]_|_=-___-__|
- | _- =  | =_ = _    |= _=   |
- |= -[]  |- = _ =    |_-=_[] |
- | =_    |= - ___    | =_ =  |
- |=  []- |-  /| |\   |=_ =[] |
- |- =_   | =|_|_|_|  |- = -  |
- |_______|__|     |__|_______|
-},q{
-               T~~
-               |
-              /^\
-             /   \
- _   _   _  /     \  _   _   _
-[ ]_[ ]_[ ]/ _   _ \[ ]_[ ]_[ ]
-|_=__-_ =_|_[ ]_[ ]_|_=-___-__|
- | _- =  | =_ = _    |= _=   |
- |= -[]  |- = _ =    |_-=_[] |
- | =_    |= - ___    | =_ =  |
- |=  []- |-  /|_|\   |=_ =[] |
- |- =_   | =|     |  |- = -  |
- |_______|__|     |__|_______|
-},q{
-               T~~
-               |
-              /^\
-             /   \
- _   _   _  /     \  _   _   _
-[ ]_[ ]_[ ]/ _   _ \[ ]_[ ]_[ ]
-|_=__-_ =_|_[ ]_[ ]_|_=-___-__|
- | _- =  | =_ = _    |= _=   |
- |= -[]  |- = _ =    |_-=_[] |
- | =_    |= - ___    | =_ =  |
- |=  []- |-  /   \   |=_ =[] |
- |- =_   | =|     |  |- = -  |
- |_______|__|     |__|_______|
-},q{
-               T~~
-               |
-              /^\
-             /   \
- _   _   _  /     \  _   _   _
-[ ]_[ ]_[ ]/ _   _ \[ ]_[ ]_[ ]
-|_=__-_ =_|_[ ]_[ ]_|_=-___-__|
- | _- =  | =_ = _    |= _=   |
- |= -[]  |- = _ =    |_-=_[] |
- | =_    |= - ___    | =_ =  |
- |=  []- |-  /|_|\   |=_ =[] |
- |- =_   | =|     |  |- = -  |
- |_______|__|     |__|_______|
-},q{
-               T~~
-               |
-              /^\
-             /   \
- _   _   _  /     \  _   _   _
-[ ]_[ ]_[ ]/ _   _ \[ ]_[ ]_[ ]
-|_=__-_ =_|_[ ]_[ ]_|_=-___-__|
- | _- =  | =_ = _    |= _=   |
- |= -[]  |- = _ =    |_-=_[] |
- | =_    |= - ___    | =_ =  |
- |=  []- |-  /| |\   |=_ =[] |
- |- =_   | =|_|_|_|  |- = -  |
- |_______|__|     |__|_______|
-}
-	);
+# Castle function moved to Asciiquarium::Environment module
 
-    my @castle_mask = (
-    q{
-                GG
-
-              rrr
-             r   r
-            r     r
-           r       r
-
-
-
-              yyy
-             yy yy
-            y y y y
-            yyyyyyy
-},q{
-                GG
-
-              rrr
-             r   r
-            r     r
-           r       r
-
-
-
-              yyy
-             yy yy
-            yyyyyyy
-            y     y
-},q{
-                GG
-
-              rrr
-             r   r
-            r     r
-           r       r
-
-
-
-              yyy
-             yyyyy
-            y     y
-            y     y
-},q{
-                GG
-
-              rrr
-             r   r
-            r     r
-           r       r
-
-
-
-              yyy
-             y   y
-            y     y
-            y     y
-},q{
-                GG
-
-              rrr
-             r   r
-            r     r
-           r       r
-
-
-
-              yyy
-             yyyyy
-            y     y
-            y     y
-},q{
-                GG
-
-              rrr
-             r   r
-            r     r
-           r       r
-
-
-
-              yyy
-             yy yy
-            yyyyyyy
-            y     y
-});
-
-    $anim->new_entity(
-        name          => "castle",
-        shape         => \@castle_image,
-        auto_trans    => 1,
-        color         => \@castle_mask,
-        position      => [ $anim->width() - 32, $anim->height() - 13, $depth{'castle'} ],
-        callback_args => [ 0, 0, 0, 0.1],
-        default_color => 'white',
-    );
-}
-
-sub add_all_seaweed {
-    my ($anim) = @_;
-    # figure out how many seaweed to add by the width of the screen
-    my $seaweed_count = int($anim->width() / 15);
-    for (1 .. $seaweed_count) {
-        add_seaweed(undef, $anim);
-    }
-}
-
-sub add_seaweed {
-    my ($old_seaweed, $anim) = @_;
-    my @seaweed_image = ('', '');
-    my $height = int(rand(4)) + 3;
-    for my $i (1 .. $height) {
-        my $left_side = $i % 2;
-        my $right_side = !$left_side;
-        $seaweed_image[$left_side] .= "(\n";
-        $seaweed_image[$right_side] .= " )\n";
-    }
-    my $x = int(rand($anim->width() - 2)) + 1;
-    my $y = $anim->height() - $height;
-    my $anim_speed = rand(.05) + .25;
-    $anim->new_entity(
-        name          => 'seaweed' . rand(1),
-        shape         => \@seaweed_image,
-        position      => [ $x, $y, $depth{'seaweed'} ],
-        callback_args => [ 0, 0, 0, $anim_speed ],
-        die_time      => time() + int(rand(4 * 60)) + (8 * 60), # seaweed lives for 8 to 12 minutes
-        death_cb      => \&add_seaweed,
-        default_color => 'green',
-    );
-}
+# Seaweed functions moved to Asciiquarium::Environment module
 
 # add an air bubble to a fish
 sub add_bubble {
@@ -2370,6 +2255,12 @@ sub dprint {
     close(D);
 }
 
+=head2 sighandler($signal)
+
+Signal handler for graceful shutdown and terminal cleanup.
+
+=cut
+
 sub sighandler {
     my ($sig) = @_;
     if ($sig eq 'INT') {quit();}
@@ -2379,12 +2270,27 @@ sub sighandler {
     else {quit("Exiting with SIG$sig");}
 }
 
+=head2 quit($message)
+
+Gracefully exits the application with an optional error message.
+
+=cut
+
 sub quit {
     my ($mesg) = @_;
-    print STDERR $mesg, "\n" if (defined($mesg));
+    Asciiquarium::Logger::info("Shutting down Asciiquarium");
+    if (defined($mesg)) {
+        Asciiquarium::Logger::error($mesg);
+        print STDERR $mesg, "\n";
+    }
     exit;
 }
 
+=head2 initialize()
+
+Initializes signal handlers for safe terminal handling.
+
+=cut
 
 sub initialize {
     # this may be paranoid, but i don't want to leave
@@ -2395,6 +2301,13 @@ sub initialize {
     }
 }
 
+
+=head2 center($width, $message)
+
+Centers a message within a given width. If the message is too long,
+it truncates with "..." suffix. If it's too short, it pads with spaces.
+
+=cut
 
 sub center {
     my ($width, $mesg) = @_;
@@ -2409,6 +2322,13 @@ sub center {
         return $mesg;
     }
 }
+
+=head2 rand_color($color_mask)
+
+Applies random colors to a color mask string. Numbers 1-9 in the mask
+are replaced with random color codes from the available color palette.
+
+=cut
 
 sub rand_color {
     my ($color_mask) = @_;
