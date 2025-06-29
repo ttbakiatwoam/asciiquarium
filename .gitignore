@@ -10,3 +10,7 @@
 
 !/.gitattributes
 !/.gitignore
+
+# Allow new modular components
+!/lib/
+!/data/
