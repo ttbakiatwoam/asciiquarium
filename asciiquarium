@@ -75,13 +75,21 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #############################################################################
 
+use strict;
+use warnings;
+use lib 'lib';
+
 use Term::Animation 2.0;
 use Term::Animation::Entity;
 use Data::Dumper;
 use Curses;
 use Getopt::Long qw(GetOptions);
-use strict;
-use warnings;
+
+# Asciiquarium modules
+use Asciiquarium::Config;
+use Asciiquarium::AsciiArt;
+use Asciiquarium::Fish;
+use Asciiquarium::Environment;
 
 my $version = "1.3";
 my $help_message = 'Asciiquarium is an aquarium/sea animation in ASCII art.
@@ -134,29 +142,8 @@ if ($classic) {
 
 my @random_objects = init_random_objects();
 
-# the Z depth at which certain items occur
-my %depth = (
-    # no gui yet
-    guiText     => 0,
-    gui         => 1,
-
-    # under water
-    shark       => 2,
-    fish_start  => 3,
-    fish_end    => 20,
-    seaweed     => 21,
-    castle      => 22,
-
-    # waterline
-    water_line3 => 2,
-    water_gap3  => 3,
-    water_line2 => 4,
-    water_gap2  => 5,
-    water_line1 => 6,
-    water_gap1  => 7,
-    water_line0 => 8,
-    water_gap0  => 9,
-);
+# Use configuration from Asciiquarium::Config
+my %depth = %Asciiquarium::Config::DEPTH_VALUES;
 
 main();
 
@@ -166,15 +153,16 @@ sub main {
 
     my $anim = Term::Animation->new();
 
-    # set the wait time for getch
-    halfdelay(1);
+    # set the wait time for getch from configuration
+    halfdelay(Asciiquarium::Config::get_animation_setting('screen_update_delay'));
     #nodelay(1);
 
     $anim->color(1);
     if ($transparent) {
         use_default_colors();
         my $cid = 1;
-        for my $f ('WHITE', 'RED', 'GREEN', 'BLUE', 'CYAN', 'MAGENTA', 'YELLOW', 'BLACK') {
+        my $curses_colors = Asciiquarium::Config::get_color_scheme('curses_colors');
+        for my $f (@{$curses_colors}) {
             init_pair($cid, eval "Curses::COLOR_$f", -1);
             $cid++;
         }
@@ -184,10 +172,10 @@ sub main {
     my $paused = 0;
     while (1) {
 
-        add_environment($anim);
-        add_castle($anim);
-        add_all_seaweed($anim);
-        add_all_fish($anim);
+        Asciiquarium::Environment::add_environment($anim);
+        Asciiquarium::Environment::add_castle($anim);
+        Asciiquarium::Environment::add_all_seaweed($anim);
+        Asciiquarium::Fish::add_all_fish($anim);
         random_object(undef, $anim);
 
         $anim->redraw_screen();
@@ -211,35 +199,9 @@ sub main {
 
 }
 
-sub add_environment {
-    my ($anim) = @_;
+# Environment functions moved to Asciiquarium::Environment module
 
-    my @water_line_segment = (
-        q{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~},
-        q{^^^^ ^^^  ^^^   ^^^    ^^^^      },
-        q{^^^^      ^^^^     ^^^    ^^     },
-        q{^^      ^^^^      ^^^    ^^^^^^  }
-    );
-
-    # tile the segments so they stretch across the screen
-    my $segment_size = length($water_line_segment[0]);
-    my $segment_repeat = int($anim->width() / $segment_size) + 1;
-    foreach my $i (0 .. $#water_line_segment) {
-        $water_line_segment[$i] = $water_line_segment[$i] x $segment_repeat;
-    }
-
-    foreach my $i (0 .. $#water_line_segment) {
-        $anim->new_entity(
-            name          => "water_seg_$i",
-            type          => "waterline",
-            shape         => $water_line_segment[$i],
-            position      => [ 0, $i + 5, $depth{'water_line' . $i} ],
-            default_color => 'cyan',
-            depth         => 22,
-            physical      => 1,
-        );
-    }
-}
+# Fish functions moved to Asciiquarium::Fish module
 
 sub add_castle {
     my ($anim) = @_;
