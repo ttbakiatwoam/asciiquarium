@@ -3,6 +3,8 @@
 
 !/asciiquarium
 !/cpanfile
+!/lib/
+!lib/**
 
 !/CHANGES.txt
 !/LICENSE.txt
@@ -10,3 +12,12 @@
 
 !/.gitattributes
 !/.gitignore
+
+# Additional ignores for development
+*.log
+*.tmp
+*~
+.*.swp
+*.bak
+*.orig
+test_modules.pl
