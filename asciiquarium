@@ -88,6 +88,7 @@ use lib 'lib';
 use Asciiquarium::Config qw(get_depth_config get_version get_help_message);
 use Asciiquarium::AsciiArt qw(get_castle_art);
 use Asciiquarium::Logger qw(debug_log);
+use Asciiquarium::Utils qw(rand_color center);
 
 my $version = get_version();
 my $help_message = get_help_message();
@@ -2235,26 +2236,5 @@ sub initialize {
 }
 
 
-sub center {
-    my ($width, $mesg) = @_;
-    my $l = length($mesg);
-    if ($l < $width) {
-        return ' ' x (int(($width - length($mesg)) / 2)) . $mesg;
-    }
-    elsif ($l > $width) {
-        return (substr($mesg, 0, ($width - ($l + 3))) . "...");
-    }
-    else {
-        return $mesg;
-    }
-}
-
-sub rand_color {
-    my ($color_mask) = @_;
-    my @colors = ('c', 'C', 'r', 'R', 'y', 'Y', 'b', 'B', 'g', 'G', 'm', 'M');
-    foreach my $i (1 .. 9) {
-        my $color = $colors[int(rand($#colors))];
-        $color_mask =~ s/$i/$color/gm;
-    }
-    return $color_mask;
-}
+# Legacy functions - now use utility module
+# The center and rand_color functions are now provided by Asciiquarium::Utils

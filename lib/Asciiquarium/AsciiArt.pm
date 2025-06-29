@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Exporter qw(import);
 
-our @EXPORT_OK = qw(get_castle_art get_seaweed_art);
+our @EXPORT_OK = qw(get_castle_art get_seaweed_art get_fishhook_art get_water_line_art);
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -231,6 +231,52 @@ sub get_seaweed_art {
         max_height => 7,  # 3 + 4 from rand(4)
         min_height => 3,
     };
+}
+
+=head2 get_fishhook_art()
+
+Returns fishhook and fishing line ASCII art.
+
+=cut
+
+sub get_fishhook_art {
+    return {
+        hook => q{
+       o
+      ||
+      ||
+/ \???||
+  \__//
+  `--'
+},
+        point => q{
+.
+
+\
+?
+},
+    };
+}
+
+=head2 get_water_line_art()
+
+Returns water line segment art for the surface animation.
+
+=cut
+
+sub get_water_line_art {
+    return [
+        '^  ^  ^  ^  ^  ^  ',
+        '^^^^^^^^^^^^^ ^^^',
+        '^^^^^ ^^^^^^^ ^^^',
+        '^^ ^^^^^ ^^^^^^^^',
+        '^^ ^^^^^^ ^^^^ ^^',
+        '^^^^ ^^^ ^^^^ ^^^',
+        '^^ ^^^^^ ^^^^^^^^',
+        '^^^^^^ ^^^^^^^^^^',
+        '^^^ ^^^ ^^^ ^^^^^',
+        '^^^^^ ^^^^^^^ ^^^',
+    ];
 }
 
 1;
