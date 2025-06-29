@@ -18,35 +18,49 @@ dynamic generation of seaweed sprites.
 
 =head1 FUNCTIONS
 
-=head2 add_all_seaweed($anim, $depth_config)
+=head2 add_all_seaweed($anim, $depth_config, $animation_config)
 
 Adds multiple seaweed entities based on screen width.
 
 =cut
 
 sub add_all_seaweed {
-    my ($anim, $depth_config) = @_;
+    my ($anim, $depth_config, $animation_config) = @_;
+    
+    # Use configuration if provided, otherwise use defaults
+    $animation_config ||= { seaweed_density => 15 };
     
     # Calculate seaweed count based on screen width
-    my $seaweed_count = int($anim->width() / 15);
+    my $seaweed_count = int($anim->width() / $animation_config->{seaweed_density});
     
     for (1 .. $seaweed_count) {
-        add_seaweed(undef, $anim, $depth_config);
+        add_seaweed(undef, $anim, $depth_config, $animation_config);
     }
 }
 
-=head2 add_seaweed($old_seaweed, $anim, $depth_config)
+=head2 add_seaweed($old_seaweed, $anim, $depth_config, $animation_config)
 
 Creates a single seaweed entity with random height and position.
 
 =cut
 
 sub add_seaweed {
-    my ($old_seaweed, $anim, $depth_config) = @_;
+    my ($old_seaweed, $anim, $depth_config, $animation_config) = @_;
+    
+    # Use configuration defaults if not provided
+    $animation_config ||= {
+        seaweed_min_height => 3,
+        seaweed_max_height => 7,
+        seaweed_min_speed => 0.25,
+        seaweed_max_speed => 0.30,
+        seaweed_min_lifespan => 480,
+        seaweed_max_lifespan => 720,
+    };
     
     # Generate seaweed image dynamically
     my @seaweed_image = ('', '');
-    my $height = int(rand(4)) + 3;  # Height between 3-6
+    my $height_range = $animation_config->{seaweed_max_height} - $animation_config->{seaweed_min_height};
+    my $height = int(rand($height_range)) + $animation_config->{seaweed_min_height};
     
     for my $i (1 .. $height) {
         my $left_side = $i % 2;
@@ -58,7 +72,14 @@ sub add_seaweed {
     # Random position
     my $x = int(rand($anim->width() - 2)) + 1;
     my $y = $anim->height() - $height;
-    my $anim_speed = rand(.05) + .25;
+    
+    # Animation speed
+    my $speed_range = $animation_config->{seaweed_max_speed} - $animation_config->{seaweed_min_speed};
+    my $anim_speed = rand($speed_range) + $animation_config->{seaweed_min_speed};
+    
+    # Lifespan calculation
+    my $lifespan_range = $animation_config->{seaweed_max_lifespan} - $animation_config->{seaweed_min_lifespan};
+    my $lifespan = int(rand($lifespan_range)) + $animation_config->{seaweed_min_lifespan};
     
     # Create seaweed entity
     $anim->new_entity(
@@ -66,7 +87,7 @@ sub add_seaweed {
         shape         => \@seaweed_image,
         position      => [ $x, $y, $depth_config->{'seaweed'} ],
         callback_args => [ 0, 0, 0, $anim_speed ],
-        die_time      => time() + int(rand(4 * 60)) + (8 * 60), # 8-12 minutes lifespan
+        die_time      => time() + $lifespan,
         death_cb      => sub { add_seaweed(@_) },
         default_color => 'green',
     );

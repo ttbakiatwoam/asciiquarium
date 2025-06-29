@@ -85,7 +85,7 @@ use warnings;
 use lib 'lib';
 
 # Import our custom modules
-use Asciiquarium::Config qw(get_depth_config get_version get_help_message);
+use Asciiquarium::Config qw(get_depth_config get_version get_help_message get_animation_config);
 use Asciiquarium::AsciiArt qw(get_castle_art);
 use Asciiquarium::Logger qw(debug_log);
 use Asciiquarium::Utils qw(rand_color center);
@@ -128,8 +128,9 @@ if ($classic) {
 
 my @random_objects = init_random_objects();
 
-# Load depth configuration from config module
+# Load configuration from config modules
 my %depth = %{get_depth_config()};
+my %animation_config = %{get_animation_config()};
 
 main();
 
@@ -170,7 +171,7 @@ sub main {
         # Initialize aquarium environment and entities
         add_environment($anim);           # Add water surface animation
         add_castle($anim);               # Add animated castle in background
-        add_all_seaweed($anim, \%depth); # Add swaying seaweed using new module
+        add_all_seaweed($anim, \%depth, \%animation_config); # Add swaying seaweed using new module
         add_all_fish($anim);             # Add swimming fish
         random_object(undef, $anim);     # Add random sea creatures
 

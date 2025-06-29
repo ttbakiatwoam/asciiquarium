@@ -290,7 +290,8 @@ _.--'              `-._
 =head2 add_fish_entity($anim, @fish_image)
 
 Internal function to create a fish entity from image data.
-This is called by both new and old fish creation functions.
+This function is a placeholder that will be fully implemented when
+the main script's add_fish_entity function is extracted.
 
 =cut
 
@@ -298,9 +299,9 @@ sub add_fish_entity {
     my $anim = shift;
     my @fish_image = @_;
 
-    # Fish entity creation logic (to be refactored from main script)
-    # This will be moved from the main script in a future iteration
-    die "add_fish_entity: Implementation needs to be extracted from main script";
+    # For now, call the main script's add_fish_entity function
+    # This will be refactored in a future iteration
+    die "add_fish_entity: This function is not yet fully extracted from main script. Use main::add_fish_entity for now.";
 }
 
 1;

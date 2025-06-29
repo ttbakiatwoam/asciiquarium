@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Exporter qw(import);
 
-our @EXPORT_OK = qw(get_depth_config get_version get_help_message);
+our @EXPORT_OK = qw(get_depth_config get_version get_help_message get_fish_config get_animation_config);
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
 =head1 NAME
@@ -47,6 +47,40 @@ sub get_depth_config {
         water_gap1  => 7,
         water_line0 => 8,
         water_gap0  => 9,
+    };
+}
+
+=head2 get_fish_config()
+
+Returns configuration for fish behavior and appearance.
+
+=cut
+
+sub get_fish_config {
+    return {
+        colors => ['c', 'C', 'r', 'R', 'y', 'Y', 'b', 'B', 'g', 'G', 'm', 'M'],
+        min_speed => 0.25,
+        max_speed => 2.25,
+        bubble_chance => 3,  # 3% chance per frame
+        max_swim_height => 9,
+    };
+}
+
+=head2 get_animation_config()
+
+Returns general animation and timing configuration.
+
+=cut
+
+sub get_animation_config {
+    return {
+        seaweed_density => 15,     # pixels per seaweed
+        seaweed_min_height => 3,
+        seaweed_max_height => 7,
+        seaweed_min_lifespan => 480,  # 8 minutes in seconds
+        seaweed_max_lifespan => 720,  # 12 minutes in seconds
+        seaweed_min_speed => 0.25,
+        seaweed_max_speed => 0.30,
     };
 }
 
