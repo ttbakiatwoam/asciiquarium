@@ -10,3 +10,11 @@
 
 !/.gitattributes
 !/.gitignore
+
+# Allow new modular components
+!/lib/
+!/data/
+
+# Allow new documentation and test files
+!/*.md
+!/*.pl

@@ -1,0 +1,37 @@
+{
+  "depths": {
+    "gui_text": 0,
+    "gui": 1,
+    "shark": 2,
+    "fish_start": 3,
+    "fish_end": 20,
+    "seaweed": 21,
+    "castle": 22,
+    "water_line3": 2,
+    "water_gap3": 3,
+    "water_line2": 4,
+    "water_gap2": 5,
+    "water_line1": 6,
+    "water_gap1": 7,
+    "water_line0": 8,
+    "water_gap0": 9
+  },
+  "colors": ["c", "C", "r", "R", "y", "Y", "b", "B", "g", "G", "m", "M"],
+  "seaweed": {
+    "count_divisor": 15,
+    "min_lifetime_minutes": 8,
+    "max_lifetime_minutes": 12,
+    "animation_speed": 0.5
+  },
+  "fish": {
+    "bubble_probability": 0.1,
+    "min_speed": 0.25,
+    "max_speed": 2.25
+  },
+  "shark": {
+    "speed_multiplier": 4
+  },
+  "rendering": {
+    "frame_delay": 1
+  }
+}
