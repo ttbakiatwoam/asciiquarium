@@ -82,23 +82,17 @@ use Curses;
 use Getopt::Long qw(GetOptions);
 use strict;
 use warnings;
+use lib 'lib';
 
-my $version = "1.3";
-my $help_message = 'Asciiquarium is an aquarium/sea animation in ASCII art.
-Enjoy the mysteries of the sea from the safety of your own terminal!
+# Import our custom modules
+use Asciiquarium::Config qw(get_depth_config get_version get_help_message get_animation_config);
+use Asciiquarium::AsciiArt qw(get_castle_art);
+use Asciiquarium::Logger qw(debug_log);
+use Asciiquarium::Utils qw(rand_color center);
+use Asciiquarium::Entity::Seaweed qw(add_all_seaweed);
 
-Options:
-  -c --classic      Only show species from Asciiquarium 1.0
-  -t --transparent  Transparent background
-  -s --screensaver  Exit on any keypress
-  -h --help         Print help and exit
-  -v --version      Print version and exit
-
-Hotkeys:
-  q  quit
-  r  redraw
-  p  pause
-';
+my $version = get_version();
+my $help_message = get_help_message();
 
 my $new_fish = 1;
 my $new_monster = 1;
@@ -134,44 +128,34 @@ if ($classic) {
 
 my @random_objects = init_random_objects();
 
-# the Z depth at which certain items occur
-my %depth = (
-    # no gui yet
-    guiText     => 0,
-    gui         => 1,
-
-    # under water
-    shark       => 2,
-    fish_start  => 3,
-    fish_end    => 20,
-    seaweed     => 21,
-    castle      => 22,
-
-    # waterline
-    water_line3 => 2,
-    water_gap3  => 3,
-    water_line2 => 4,
-    water_gap2  => 5,
-    water_line1 => 6,
-    water_gap1  => 7,
-    water_line0 => 8,
-    water_gap0  => 9,
-);
+# Load configuration from config modules
+my %depth = %{get_depth_config()};
+my %animation_config = %{get_animation_config()};
 
 main();
 
 ####################### MAIN #######################
 
+=head1 MAIN FUNCTION
+
+The main function initializes the animation system, sets up the display,
+and runs the main animation loop.
+
+=cut
+
 sub main {
 
+    # Initialize the Term::Animation system
     my $anim = Term::Animation->new();
 
-    # set the wait time for getch
+    # Configure input timing (half-second delay for getch)
     halfdelay(1);
     #nodelay(1);
 
+    # Enable color support
     $anim->color(1);
     if ($transparent) {
+        # Set up transparent background colors
         use_default_colors();
         my $cid = 1;
         for my $f ('WHITE', 'RED', 'GREEN', 'BLUE', 'CYAN', 'MAGENTA', 'YELLOW', 'BLACK') {
@@ -184,11 +168,12 @@ sub main {
     my $paused = 0;
     while (1) {
 
-        add_environment($anim);
-        add_castle($anim);
-        add_all_seaweed($anim);
-        add_all_fish($anim);
-        random_object(undef, $anim);
+        # Initialize aquarium environment and entities
+        add_environment($anim);           # Add water surface animation
+        add_castle($anim);               # Add animated castle in background
+        add_all_seaweed($anim, \%depth, \%animation_config); # Add swaying seaweed using new module
+        add_all_fish($anim);             # Add swimming fish
+        random_object(undef, $anim);     # Add random sea creatures
 
         $anim->redraw_screen();
 
@@ -243,180 +228,11 @@ sub add_environment {
 
 sub add_castle {
     my ($anim) = @_;
-    my @castle_image = (
-q{
-               T~~
-               |
-              /^\
-             /   \
- _   _   _  /     \  _   _   _
-[ ]_[ ]_[ ]/ _   _ \[ ]_[ ]_[ ]
-|_=__-_ =_|_[ ]_[ ]_|_=-___-__|
- | _- =  | =_ = _    |= _=   |
- |= -[]  |- = _ =    |_-=_[] |
- | =_    |= - ___    | =_ =  |
- |=  []- |-  /| |\   |=_ =[] |
- |- =_   | =| | | |  |- = -  |
- |_______|__|_|_|_|__|_______|
-},q{
-               T~~
-               |
-              /^\
-             /   \
- _   _   _  /     \  _   _   _
-[ ]_[ ]_[ ]/ _   _ \[ ]_[ ]_[ ]
-|_=__-_ =_|_[ ]_[ ]_|_=-___-__|
- | _- =  | =_ = _    |= _=   |
- |= -[]  |- = _ =    |_-=_[] |
- | =_    |= - ___    | =_ =  |
- |=  []- |-  /| |\   |=_ =[] |
- |- =_   | =|_|_|_|  |- = -  |
- |_______|__|     |__|_______|
-},q{
-               T~~
-               |
-              /^\
-             /   \
- _   _   _  /     \  _   _   _
-[ ]_[ ]_[ ]/ _   _ \[ ]_[ ]_[ ]
-|_=__-_ =_|_[ ]_[ ]_|_=-___-__|
- | _- =  | =_ = _    |= _=   |
- |= -[]  |- = _ =    |_-=_[] |
- | =_    |= - ___    | =_ =  |
- |=  []- |-  /|_|\   |=_ =[] |
- |- =_   | =|     |  |- = -  |
- |_______|__|     |__|_______|
-},q{
-               T~~
-               |
-              /^\
-             /   \
- _   _   _  /     \  _   _   _
-[ ]_[ ]_[ ]/ _   _ \[ ]_[ ]_[ ]
-|_=__-_ =_|_[ ]_[ ]_|_=-___-__|
- | _- =  | =_ = _    |= _=   |
- |= -[]  |- = _ =    |_-=_[] |
- | =_    |= - ___    | =_ =  |
- |=  []- |-  /   \   |=_ =[] |
- |- =_   | =|     |  |- = -  |
- |_______|__|     |__|_______|
-},q{
-               T~~
-               |
-              /^\
-             /   \
- _   _   _  /     \  _   _   _
-[ ]_[ ]_[ ]/ _   _ \[ ]_[ ]_[ ]
-|_=__-_ =_|_[ ]_[ ]_|_=-___-__|
- | _- =  | =_ = _    |= _=   |
- |= -[]  |- = _ =    |_-=_[] |
- | =_    |= - ___    | =_ =  |
- |=  []- |-  /|_|\   |=_ =[] |
- |- =_   | =|     |  |- = -  |
- |_______|__|     |__|_______|
-},q{
-               T~~
-               |
-              /^\
-             /   \
- _   _   _  /     \  _   _   _
-[ ]_[ ]_[ ]/ _   _ \[ ]_[ ]_[ ]
-|_=__-_ =_|_[ ]_[ ]_|_=-___-__|
- | _- =  | =_ = _    |= _=   |
- |= -[]  |- = _ =    |_-=_[] |
- | =_    |= - ___    | =_ =  |
- |=  []- |-  /| |\   |=_ =[] |
- |- =_   | =|_|_|_|  |- = -  |
- |_______|__|     |__|_______|
-}
-	);
-
-    my @castle_mask = (
-    q{
-                GG
-
-              rrr
-             r   r
-            r     r
-           r       r
-
-
-
-              yyy
-             yy yy
-            y y y y
-            yyyyyyy
-},q{
-                GG
-
-              rrr
-             r   r
-            r     r
-           r       r
-
-
-
-              yyy
-             yy yy
-            yyyyyyy
-            y     y
-},q{
-                GG
-
-              rrr
-             r   r
-            r     r
-           r       r
-
-
-
-              yyy
-             yyyyy
-            y     y
-            y     y
-},q{
-                GG
-
-              rrr
-             r   r
-            r     r
-           r       r
-
-
-
-              yyy
-             y   y
-            y     y
-            y     y
-},q{
-                GG
-
-              rrr
-             r   r
-            r     r
-           r       r
-
-
-
-              yyy
-             yyyyy
-            y     y
-            y     y
-},q{
-                GG
-
-              rrr
-             r   r
-            r     r
-           r       r
-
-
-
-              yyy
-             yy yy
-            yyyyyyy
-            y     y
-});
+    
+    # Load castle art from external data module
+    my $castle_art = get_castle_art();
+    my @castle_image = @{$castle_art->{images}};
+    my @castle_mask = @{$castle_art->{masks}};
 
     $anim->new_entity(
         name          => "castle",
@@ -429,38 +245,7 @@ q{
     );
 }
 
-sub add_all_seaweed {
-    my ($anim) = @_;
-    # figure out how many seaweed to add by the width of the screen
-    my $seaweed_count = int($anim->width() / 15);
-    for (1 .. $seaweed_count) {
-        add_seaweed(undef, $anim);
-    }
-}
-
-sub add_seaweed {
-    my ($old_seaweed, $anim) = @_;
-    my @seaweed_image = ('', '');
-    my $height = int(rand(4)) + 3;
-    for my $i (1 .. $height) {
-        my $left_side = $i % 2;
-        my $right_side = !$left_side;
-        $seaweed_image[$left_side] .= "(\n";
-        $seaweed_image[$right_side] .= " )\n";
-    }
-    my $x = int(rand($anim->width() - 2)) + 1;
-    my $y = $anim->height() - $height;
-    my $anim_speed = rand(.05) + .25;
-    $anim->new_entity(
-        name          => 'seaweed' . rand(1),
-        shape         => \@seaweed_image,
-        position      => [ $x, $y, $depth{'seaweed'} ],
-        callback_args => [ 0, 0, 0, $anim_speed ],
-        die_time      => time() + int(rand(4 * 60)) + (8 * 60), # seaweed lives for 8 to 12 minutes
-        death_cb      => \&add_seaweed,
-        default_color => 'green',
-    );
-}
+# Seaweed functions - now provided by Asciiquarium::Entity::Seaweed module
 
 # add an air bubble to a fish
 sub add_bubble {
@@ -2402,10 +2187,9 @@ sub random_object {
     $random_objects[$sub]->($dead_object, $anim);
 }
 
+# Legacy dprint function - now uses the logger module
 sub dprint {
-    open(D, ">>", "debug");
-    print D @_, "\n";
-    close(D);
+    debug_log(@_);
 }
 
 sub sighandler {
@@ -2434,26 +2218,5 @@ sub initialize {
 }
 
 
-sub center {
-    my ($width, $mesg) = @_;
-    my $l = length($mesg);
-    if ($l < $width) {
-        return ' ' x (int(($width - length($mesg)) / 2)) . $mesg;
-    }
-    elsif ($l > $width) {
-        return (substr($mesg, 0, ($width - ($l + 3))) . "...");
-    }
-    else {
-        return $mesg;
-    }
-}
-
-sub rand_color {
-    my ($color_mask) = @_;
-    my @colors = ('c', 'C', 'r', 'R', 'y', 'Y', 'b', 'B', 'g', 'G', 'm', 'M');
-    foreach my $i (1 .. 9) {
-        my $color = $colors[int(rand($#colors))];
-        $color_mask =~ s/$i/$color/gm;
-    }
-    return $color_mask;
-}
+# Legacy functions - now use utility module
+# The center and rand_color functions are now provided by Asciiquarium::Utils
