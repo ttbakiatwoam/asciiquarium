@@ -3,7 +3,8 @@ package Asciiquarium::EntityFactory;
 use strict;
 use warnings;
 use Carp qw(croak);
-use Asciiquarium::Entity::Base;
+use FindBin qw($RealBin);
+use lib "$RealBin";  # Add current directory to lib path
 
 =head1 NAME
 
@@ -119,11 +120,21 @@ sub _create_fish_from_patterns {
     my $fish_num = int(rand(scalar @$patterns));
     my $pattern = $patterns->[$fish_num];
     
-    my $speed = rand(2) + $self->{config}->get_config('fish', 'min_speed');
-    my $depth = int(rand(
-        $self->{config}->get_depth('fish_end') - 
-        $self->{config}->get_depth('fish_start')
-    )) + $self->{config}->get_depth('fish_start');
+    # Get configuration values with fallbacks
+    my $min_speed = 0.25;
+    my $bubble_prob = 0.1;
+    my $fish_start_depth = 3;
+    my $fish_end_depth = 20;
+    
+    if ($self->{config}) {
+        $min_speed = $self->{config}->get_config('fish', 'min_speed') || $min_speed;
+        $bubble_prob = $self->{config}->get_config('fish', 'bubble_probability') || $bubble_prob;
+        $fish_start_depth = $self->{config}->get_depth('fish_start') || $fish_start_depth;
+        $fish_end_depth = $self->{config}->get_depth('fish_end') || $fish_end_depth;
+    }
+    
+    my $speed = rand(2) + $min_speed;
+    my $depth = int(rand($fish_end_depth - $fish_start_depth)) + $fish_start_depth;
     
     # Determine direction
     if ($fish_num % 2) {
@@ -134,18 +145,19 @@ sub _create_fish_from_patterns {
     $color_mask =~ s/4/W/gm;
     $color_mask = $self->_randomize_color($color_mask);
     
-    my $entity = Asciiquarium::Entity::Base->new(
+    # Return Term::Animation::Entity directly for compatibility
+    require Term::Animation::Entity;
+    my $entity = Term::Animation::Entity->new(
         type => 'fish',
         shape => $pattern->{shape}->[0],
         auto_trans => 1,
         color => $color_mask,
         position => [0, 0, $depth],
-        callback_args => [$speed, 0, 0, $self->{config}->get_config('fish', 'bubble_probability')],
+        callback_args => [$speed, 0, 0, $bubble_prob],
         callback => \&_fish_callback,
         die_offscreen => 1,
         death_cb => \&_fish_death_callback,
         default_color => 'yellow',
-        logger => $self->{logger},
         %override_args
     );
     
@@ -232,9 +244,16 @@ sub create_seaweed {
 sub _randomize_color {
     my ($self, $color_mask) = @_;
     
-    my @colors = $self->{config}->get_colors();
+    # Get colors from config with fallback
+    my @colors;
+    if ($self->{config}) {
+        @colors = $self->{config}->get_colors();
+    } else {
+        @colors = ('c', 'C', 'r', 'R', 'y', 'Y', 'b', 'B', 'g', 'G', 'm', 'M');
+    }
+    
     foreach my $i (1 .. 9) {
-        my $color = $colors[int(rand($#colors))];
+        my $color = $colors[int(rand(@colors))];
         $color_mask =~ s/$i/$color/gm;
     }
     

@@ -6,6 +6,18 @@
 #
 # Enjoy the mysteries of the sea from the safety of your own terminal!
 #
+# ARCHITECTURE:
+# This version has been refactored to use a modular architecture:
+# - lib/Asciiquarium/Config.pm: Configuration and ASCII art management
+# - lib/Asciiquarium/Logger.pm: Comprehensive logging system  
+# - lib/Asciiquarium/EntityFactory.pm: Entity creation with reduced duplication
+# - lib/Asciiquarium/Entity/Base.pm: Base class for all entities
+# - data/config.json: Configurable values (depths, colors, timing)
+# - data/ascii_art.json: ASCII art patterns and sprites
+#
+# The script maintains full backward compatibility - if the modular components
+# cannot be loaded, it falls back to the original hardcoded behavior.
+#
 #############################################################################
 # Original Author:
 #   Kirk Baucom <kbaucom@schizoid.com>
@@ -261,13 +273,21 @@ sub main {
 
 sub add_environment {
     my ($anim) = @_;
-
-    my @water_line_segment = (
-        q{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~},
-        q{^^^^ ^^^  ^^^   ^^^    ^^^^      },
-        q{^^^^      ^^^^     ^^^    ^^     },
-        q{^^      ^^^^      ^^^    ^^^^^^  }
-    );
+    
+    # Get water line segments from config if available
+    my @water_line_segment;
+    if ($config) {
+        @water_line_segment = @{$config->get_ascii_art('water_segments')};
+        $logger->debug("Loaded water segments from config") if $logger;
+    } else {
+        # Fallback to original hardcoded values
+        @water_line_segment = (
+            q{~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~},
+            q{^^^^ ^^^  ^^^   ^^^    ^^^^      },
+            q{^^^^      ^^^^     ^^^    ^^     },
+            q{^^      ^^^^      ^^^    ^^^^^^  }
+        );
+    }
 
     # tile the segments so they stretch across the screen
     my $segment_size = length($water_line_segment[0]);
@@ -565,6 +585,18 @@ sub add_all_fish {
 sub add_fish {
     my @parm = @_;
 
+    # Use entity factory if available, otherwise fallback to original logic
+    if ($entity_factory) {
+        my ($old_ent, $anim) = @parm;
+        my $fish_entity = $entity_factory->create_fish($anim);
+        if ($fish_entity) {
+            $anim->add_entity($fish_entity);
+            $logger->debug("Created fish using entity factory") if $logger;
+            return;
+        }
+    }
+    
+    # Fallback to original logic
     if ($new_fish) {
         if (int(rand(12)) > 8) {
             add_new_fish(@parm);
