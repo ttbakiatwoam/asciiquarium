@@ -103,6 +103,7 @@ use lib "$RealBin/lib";
 use Asciiquarium::Config;
 use Asciiquarium::Logger;
 use Asciiquarium::EntityFactory;
+use Asciiquarium::Utils qw(rand_color center_text);
 
 my $version = "1.3";
 
@@ -2541,15 +2542,22 @@ sub initialize {
 
 sub center {
     my ($width, $mesg) = @_;
-    my $l = length($mesg);
-    if ($l < $width) {
-        return ' ' x (int(($width - length($mesg)) / 2)) . $mesg;
-    }
-    elsif ($l > $width) {
-        return (substr($mesg, 0, ($width - ($l + 3))) . "...");
-    }
-    else {
-        return $mesg;
+    
+    # Use utility function if available, otherwise use original logic
+    if (defined &Asciiquarium::Utils::center_text) {
+        return Asciiquarium::Utils::center_text($width, $mesg);
+    } else {
+        # Fallback to original implementation
+        my $l = length($mesg);
+        if ($l < $width) {
+            return ' ' x (int(($width - length($mesg)) / 2)) . $mesg;
+        }
+        elsif ($l > $width) {
+            return (substr($mesg, 0, ($width - ($l + 3))) . "...");
+        }
+        else {
+            return $mesg;
+        }
     }
 }
 
@@ -2564,9 +2572,15 @@ sub rand_color {
         @colors = ('c', 'C', 'r', 'R', 'y', 'Y', 'b', 'B', 'g', 'G', 'm', 'M');
     }
     
-    foreach my $i (1 .. 9) {
-        my $color = $colors[int(rand($#colors))];
-        $color_mask =~ s/$i/$color/gm;
+    # Use utility function if available, otherwise use original logic
+    if (defined &Asciiquarium::Utils::rand_color) {
+        return Asciiquarium::Utils::rand_color($color_mask, \@colors);
+    } else {
+        # Fallback to original implementation
+        foreach my $i (1 .. 9) {
+            my $color = $colors[int(rand(@colors))];
+            $color_mask =~ s/$i/$color/gm;
+        }
+        return $color_mask;
     }
-    return $color_mask;
 }

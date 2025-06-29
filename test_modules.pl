@@ -42,6 +42,22 @@ if ($@) {
     print "✗ Logger module error: $@\n";
 }
 
+# Test Utils module
+eval {
+    require Asciiquarium::Utils;
+    Asciiquarium::Utils->import(qw(rand_color center_text));
+    
+    my $test_mask = "12345";
+    my $colored = rand_color($test_mask, ['r', 'g', 'b']);
+    print "✓ Utils module loaded successfully\n";
+    
+    my $centered = center_text(20, "test");
+    print "✓ Text centering: '$centered'\n";
+};
+if ($@) {
+    print "✗ Utils module error: $@\n";
+}
+
 # Test EntityFactory module
 eval {
     require Asciiquarium::EntityFactory;
